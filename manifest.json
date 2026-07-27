@@ -1,0 +1,17 @@
+{
+  "name": "مصاريفي الشهرية",
+  "short_name": "مصاريفي",
+  "description": "تطبيق لتتبّع المصاريف والمدخرات الشهرية",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A1633",
+  "theme_color": "#0A1633",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
