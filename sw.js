@@ -1,5 +1,5 @@
 /* ===== Service Worker — تشغيل التطبيق بدون إنترنت ===== */
-var CACHE = 'masarifi-v1';
+var CACHE = 'masarifi-v3';
 var ASSETS = [
   './',
   './index.html',
@@ -27,16 +27,34 @@ self.addEventListener('activate', function (e) {
   );
 });
 
-// الكاش أولاً — التطبيق كله محلي ولا يحتاج شبكة
+// صفحة التطبيق: الشبكة أولاً حتى تصل التحديثات فوراً، والكاش احتياطي عند انقطاع الإنترنت.
+// بقية الملفات: الكاش أولاً للسرعة، مع تحديث النسخة المخزّنة في الخلفية.
 self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then(function (hit) {
-      return hit || fetch(e.request).then(function (res) {
+
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request).then(function (res) {
         var copy = res.clone();
         caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
         return res;
-      }).catch(function () { return caches.match('./index.html'); });
+      }).catch(function () {
+        return caches.match(e.request).then(function (hit) {
+          return hit || caches.match('./index.html');
+        });
+      })
+    );
+    return;
+  }
+
+  e.respondWith(
+    caches.match(e.request).then(function (hit) {
+      var net = fetch(e.request).then(function (res) {
+        var copy = res.clone();
+        caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
+        return res;
+      }).catch(function () { return hit; });
+      return hit || net;
     })
   );
 });

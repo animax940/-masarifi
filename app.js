@@ -205,6 +205,7 @@
   function renderMain() {
     $('month-label').textContent = MONTHS[state.view.m] + ' ' + state.view.y;
     $('total-cur').textContent = state.settings.currency;
+    $('spent-cur').textContent = state.settings.currency;
 
     var list = monthExpenses();
     var spent = list.reduce(function (s, e) { return s + e.amount; }, 0);
@@ -217,6 +218,7 @@
     $('total-label').textContent = hasBudget ? 'الـمـتـبـقـي' : 'الـمـجـمـوع';
     $('total-amount').textContent = fmtMoney(hasBudget ? remain : spent);
     document.querySelector('.total-card').classList.toggle('over', hasBudget && remain < 0);
+    $('spent-amount').textContent = fmtMoney(spent);
 
     $('budget-val').textContent = masked(b.budget);
     $('savings-val').textContent = masked(b.savings);
@@ -578,7 +580,25 @@
   $('amount-input').addEventListener('focus', function () {
     this.value = this.value.replace(/,/g, '');
   });
-  $('note-input').addEventListener('keydown', function (e) { if (e.key !== 'Enter') beep('toggle'); });
+  // نبضة واحدة فقط لكل ضغطة مفتاح:
+  // - تجاهل التكرار التلقائي عند الاستمرار بالضغط (e.repeat)
+  // - تجاهل مفاتيح التعديل التي لا تكتب حرفاً
+  // - كبح زمني يمنع تراكم النبضات عند الكتابة السريعة
+  var IGNORED_KEYS = {
+    Shift: 1, Control: 1, Alt: 1, Meta: 1, CapsLock: 1, Tab: 1, Escape: 1, Enter: 1,
+    ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1,
+    Home: 1, End: 1, PageUp: 1, PageDown: 1, Insert: 1, ContextMenu: 1, Dead: 1
+  };
+  var lastKeyFeedback = 0;
+  function keyFeedback(e) {
+    if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
+    if (IGNORED_KEYS[e.key]) return;
+    var now = Date.now();
+    if (now - lastKeyFeedback < 45) return;
+    lastKeyFeedback = now;
+    beep('key');
+  }
+  $('note-input').addEventListener('keydown', keyFeedback);
 
   $('btn-back-settings').addEventListener('click', function () { beep('click'); show('screen-main'); });
   $('sw-sound').addEventListener('click', function () {
@@ -628,13 +648,17 @@
     if (e.target === this) { beep('click'); this.hidden = true; }
   });
 
+  // زر الرجوع في أندرويد يستدعي هذه الدالة؛ ترجع true إن تعاملت مع الضغطة
+  window.__goBack = function () {
+    if (!$('dlg-overlay').hidden) { closeDlg(false); return true; }
+    if (!$('num-overlay').hidden) { $('num-overlay').hidden = true; return true; }
+    if (!$('cal-overlay').hidden) { $('cal-overlay').hidden = true; return true; }
+    if (!$('screen-main').classList.contains('is-active')) { show('screen-main'); return true; }
+    return false;
+  };
+
   document.addEventListener('keydown', function (e) {
-    if (e.key !== 'Escape') return;
-    if (!$('dlg-overlay').hidden) { closeDlg(false); return; }
-    if (!$('num-overlay').hidden) { $('num-overlay').hidden = true; return; }
-    if (!$('cal-overlay').hidden) { $('cal-overlay').hidden = true; return; }
-    if ($('screen-main').classList.contains('is-active')) return;
-    show('screen-main');
+    if (e.key === 'Escape') window.__goBack();
   });
 
   /* ---------- الإقلاع ---------- */

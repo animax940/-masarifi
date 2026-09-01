@@ -161,6 +161,25 @@ body{
 }
 .wallet-circle svg{width:38px;height:38px}
 
+
+/* ===== خانة مجموع المصاريف ===== */
+.sum-card{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(15,38,86,.7);border:1.5px solid rgba(233,196,106,.45);
+  border-radius:var(--r-lg);padding:8px 14px;margin-bottom:12px;
+}
+.sum-icon{
+  width:34px;height:34px;flex:0 0 auto;border-radius:10px;
+  display:grid;place-items:center;color:var(--gold);
+  background:rgba(10,22,51,.75);border:1.5px solid rgba(233,196,106,.4);
+}
+.sum-icon .gi{width:60%;height:60%}
+.sum-label{color:var(--gold);font-size:19px;white-space:nowrap;flex:0 0 auto}
+.sum-value{
+  flex:1;min-width:0;text-align:left;direction:ltr;
+  color:#fff;font-size:23px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.sum-value .cur{font-size:16px;color:rgba(255,255,255,.8)}
 /* ===== قائمة المصاريف ===== */
 .list{display:flex;flex-direction:column;gap:9px;margin-bottom:12px}
 .exp-card{

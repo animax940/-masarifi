@@ -91,13 +91,19 @@
       tone({ f0: 440, f1: 200, dur: 0.22, type: 'sawtooth', gain: 0.14 });
       tone({ f0: 300, f1: 130, dur: 0.24, type: 'sine', gain: 0.12, delay: 0.05 });
     },
+    key: function () {
+      // نقرة مفتاح واحدة وقصيرة جداً
+      noise({ dur: 0.022, freq: 3000, gain: 0.05 });
+      tone({ f0: 1500, f1: 1100, dur: 0.028, type: 'triangle', gain: 0.09 });
+    },
     error: function () {
       tone({ f0: 240, f1: 240, dur: 0.09, type: 'square', gain: 0.12 });
       tone({ f0: 200, f1: 200, dur: 0.13, type: 'square', gain: 0.12, delay: 0.12 });
     }
   };
 
-  var VIBES = { click: 8, toggle: 6, navigate: 10, save: [12, 40, 12], 'delete': 30, error: [20, 50, 20] };
+  // نبضة واحدة لكل حدث؛ الأنماط المصفوفية للأحداث المهمة فقط
+  var VIBES = { click: 8, toggle: 6, key: 12, navigate: 10, save: [12, 40, 12], 'delete': 30, error: [20, 50, 20] };
 
   var Sound = {
     configure: function (options) {
@@ -118,7 +124,8 @@
       if (c.state === 'suspended') c.resume();
       try { recipe(); } catch (e) { /* تجاهل أخطاء الصوت بصمت */ }
       if (global.navigator && navigator.vibrate && VIBES[name]) {
-        try { navigator.vibrate(VIBES[name]); } catch (e) {}
+        // إلغاء أي اهتزاز جارٍ أولاً حتى لا تتراكم النبضات
+        try { navigator.vibrate(0); navigator.vibrate(VIBES[name]); } catch (e) {}
       }
     },
     // تهيئة AudioContext عند أول تفاعل (قيود المتصفحات)
