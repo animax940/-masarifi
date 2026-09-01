@@ -44,6 +44,31 @@ powershell -NoProfile -ExecutionPolicy Bypass -File expenses-app/serve.ps1 -Port
 
 > التثبيت الكامل يتطلب HTTPS. عبر `http://192.168.x.x` يعمل التطبيق لكن دون تثبيت أو عمل بدون إنترنت.
 
+
+## نسخة أندرويد (APK)
+
+يوجد في `../android` مشروع أندرويد أصلي يغلّف التطبيق:
+
+- ملفات الويب **مضمّنة داخل الـ APK** (`app/src/main/assets`) — لا يحتاج إنترنت ولا خادماً
+- تُقدَّم عبر أصل آمن وهمي `https://masarifi.local/` ليعمل `localStorage` بشكل موثوق
+- بلا شريط عنوان، بلا صلاحية إنترنت، وصلاحية الاهتزاز فقط
+- زر الرجوع في الجهاز يغلق النوافذ ويرجع للشاشة الرئيسية قبل أن يخرج من التطبيق
+
+### إعادة البناء بعد أي تعديل على التطبيق
+
+```
+node -e "const fs=require('fs');let h=fs.readFileSync('expenses-app/index.html','utf8');h=h.replace(/<link rel=\"manifest\"[^>]*>\n?/,'').replace(/<script>[\s\S]*?serviceWorker[\s\S]*?<\/script>\n?/,'');fs.writeFileSync('android/app/src/main/assets/index.html',h)"
+```
+
+ثم انسخ `styles.css` و`app.js` و`sounds.js` إلى `android/app/src/main/assets/` وشغّل:
+
+```
+gradle assembleDebug
+```
+
+مع ضبط `JAVA_HOME` على `C:\Program Files\Android\openjdk\jdk-21.0.8`.
+الناتج: `android/app/build/outputs/apk/debug/app-debug.apk`
+
 ## الملفات
 
 | الملف | الوظيفة |
@@ -67,7 +92,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File expenses-app/serve.ps1 -Port
    - القيمتان تُحفظان لكل شهر على حدة.
 2. **تفاصيل المصروف** — التاريخ (تقويم عربي مخصص)، الملاحظة، المبلغ، 15 تصنيفاً، 5 ألوان، حفظ/رجوع/حذف.
    اللون المختار يظهر في القائمة: يلوّن دائرة الأيقونة والشريط الجانبي للبطاقة.
-3. **الضبط** — يُفتح من ⚙️ أعلى يمين الشاشة الرئيسية:
+3. **الضبط** — يُفتح من زر ⚙️ الصغير أسفل الشاشة الرئيسية:
    - **مفتاح تشغيل/إيقاف الصوت** (محفوظ تلقائياً)
    - مستوى الصوت 0–100%
    - العملة الافتراضية (ر.ع افتراضياً)
@@ -102,5 +127,5 @@ powershell -NoProfile -ExecutionPolicy Bypass -File expenses-app/serve.ps1 -Port
 ## ملاحظات التصميم
 
 - مسافة أمان علوية وسفلية عبر `env(safe-area-inset-*)` حتى لا يختفي المحتوى خلف شريط حالة الجوال أو شريط الإيماءات.
-- عرض أقصى 480px متمركز، ومتجاوب حتى 360px.
+- يملأ عرض الشاشة بالكامل، ومتجاوب حتى 360px.
 - دعم `prefers-reduced-motion` و`aria-label` لكل زر.
